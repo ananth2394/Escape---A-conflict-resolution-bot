@@ -5,42 +5,45 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class Player implements escape.sim.Player {
-	private Random rand;
+    private Random rand;
 	
-	private int turn;
+    private int turn;
     private int n;
-	private int lastMove;
+    private int lastMove;
     private int nextLastMove;
     private int ownedHandle = -1;
-	private ArrayList<Integer> moves;  // Represents the handles held in the previous turns. Zero-based.
-	private ArrayList<List<Integer>> conflictsPerRound;
+    private ArrayList<Integer> moves;  // Represents the handles held in the previous turns. Zero-based.
+    private ArrayList<List<Integer>> conflictsPerRound;
 	
-	public Player() {
-		this.rand = new Random();
-	}
+    public Player() {
+        this.rand = new Random();
+    }
 
-	public int init(int n) {
-		this.turn = 0;
+    public int init(int n) {
+        this.turn = 0;
         this.n = n;
-		this.conflictsPerRound = new ArrayList<List<Integer>>();
-		this.moves = new ArrayList<Integer>();
-		
-		return attempt(null);
-	}
-    
-	public int attempt(List<Integer> conflicts) {
+        this.conflictsPerRound = new ArrayList<List<Integer>>();
+        this.moves = new ArrayList<Integer>();
+            
+        return attempt(null);
+    }
+
+    public int attempt(List<Integer> conflicts) {
         int move = this.getMove(conflicts);
+        System.out.println(conflicts);
+        //System.out.println("hihihi");
         this.nextLastMove = this.lastMove;
         this.lastMove = move;
         this.moves.add(move);
         this.turn++;
         return move + 1;
-	}
+    }
     
     public int getMove(List<Integer> conflicts) {
         if (this.turn == 0) {
             return 0;
-        } else if ((this.turn % 2) != 0) {
+        } 
+        else if ((this.turn % 2) != 0) {
             if (conflicts.size() == 0) {
                 this.ownedHandle = this.lastMove;
             }
@@ -49,7 +52,8 @@ public class Player implements escape.sim.Player {
             } else {
                 return this.chooseRandom(conflicts);
             }
-        } else {
+        } 
+        else {
             if (this.ownedHandle != -1) {
                 return this.ownedHandle;
             } else {
@@ -69,7 +73,10 @@ public class Player implements escape.sim.Player {
             choices.add(i);
         }
         if (conflicts.size() != 0) {
+            int temp = this.rand.nextInt(this.n);
+            if (temp!=0){
             choices.remove(new Integer(this.lastMove));
+            }
         }
         choices.remove(new Integer(excluding));
         int index = this.rand.nextInt(choices.size());
