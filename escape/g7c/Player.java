@@ -48,7 +48,7 @@ public class Player implements escape.sim.Player {
                 this.ownedHandle = this.lastMove;
             }
             if (this.ownedHandle != -1) {
-                return this.chooseRandomExcluding(this.ownedHandle, conflicts);
+                return this.chooseRandomExcluding(this.ownedHandle, conflicts, false);
             } else {
                 return this.chooseRandom(conflicts);
             }
@@ -57,28 +57,34 @@ public class Player implements escape.sim.Player {
             if (this.ownedHandle != -1) {
                 return this.ownedHandle;
             } else {
-                return this.chooseRandomExcluding(this.nextLastMove, conflicts);
+                return this.chooseRandomExcluding(this.nextLastMove, conflicts, true);
             }
         }
     }
     
     public int chooseRandom(List<Integer> conflicts) {
-        return this.chooseRandomExcluding(-1, conflicts);
+        return this.chooseRandomExcluding(-1, conflicts, false);
     }
     
-    public int chooseRandomExcluding(int excluding, List<Integer> conflicts) {
+    public int chooseRandomExcluding(int excluding, List<Integer> conflicts, boolean enableProb) {
         boolean avoidLast = conflicts.size() == 0;
         List<Integer> choices = new ArrayList<Integer>();
         for (int i = 0; i < this.n; i++) {
             choices.add(i);
         }
         if (conflicts.size() != 0) {
-            int temp = this.rand.nextInt(this.n);
-            if (temp!=0){
             choices.remove(new Integer(this.lastMove));
+        }
+        if (enableProb){
+            int temp = this.rand.nextInt(this.n);
+            System.out.println("temp" + temp);
+            if (temp!=0){
+                choices.remove(new Integer(excluding));
+                System.out.println(choices);
             }
         }
-        choices.remove(new Integer(excluding));
+        else
+            choices.remove(new Integer(excluding));
         int index = this.rand.nextInt(choices.size());
         return choices.get(index);
     }
