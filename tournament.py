@@ -29,7 +29,8 @@ for i in tqdm(range(repetition)):
         results.extend(parsed)
         log.close()
 
-print("Min, max: %d, %d" % (min(results), max(results)))
-print("Median: %.2f" % statistics.median(results))
-print("Average: %.2f" % statistics.mean(results))
-print("Standard deviation: %.2f" % statistics.pstdev(results))
+print("\n\n%d players (%s) for %d iterations" % (num_handles, player, repetition))
+print("- Min, max: %d, %d" % (min(results), max(results)))
+print("- Median: %.2f" % statistics.median(results))
+print("- Average: %.2f" % statistics.mean(results))
+print("- Standard deviation: %.2f" % statistics.pstdev(results))
