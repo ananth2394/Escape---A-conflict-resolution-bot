@@ -11,7 +11,7 @@ public class Player implements escape.sim.Player {
     private int n;
 	private int lastMove;
     private int nextLastMove;
-    private int ownedHandle;
+    private int ownedHandle = -1;
 	private ArrayList<Integer> moves;  // Represents the handles held in the previous turns. Zero-based.
 	private ArrayList<List<Integer>> conflictsPerRound;
 	
@@ -39,19 +39,18 @@ public class Player implements escape.sim.Player {
     
     public int getMove(List<Integer> conflicts) {
         if (this.turn == 0) {
-            return rand.nextInt(this.n);
+            return 0;
         } else if ((this.turn % 2) != 0) {
             if (conflicts.size() == 0) {
-                System.out.println("Claiming handle " + (this.lastMove + 1));
                 this.ownedHandle = this.lastMove;
             }
-            if (this.ownedHandle != 0) {
+            if (this.ownedHandle != -1) {
                 return this.chooseRandomExcluding(this.ownedHandle, conflicts);
             } else {
                 return this.chooseRandom(conflicts);
             }
         } else {
-            if (this.ownedHandle != 0) {
+            if (this.ownedHandle != -1) {
                 return this.ownedHandle;
             } else {
                 return this.chooseRandomExcluding(this.nextLastMove, conflicts);
