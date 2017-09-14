@@ -22,6 +22,7 @@ public class Simulator {
 
     private static long playerTimeout = 5000;
     private static boolean gui = false;
+    private static boolean humanVerbose = false;
     private static double fps = 5;
     private static int n = 0;
     private static List<String> playerNames = new ArrayList<String>();
@@ -83,12 +84,12 @@ public class Simulator {
         }
 
         for (int turn = 1; turn < turnLimit; ++ turn) {
-            System.out.println("Round " + turn);
+            if (humanVerbose) System.out.println("Round " + turn);
             for (int i = 0; i < n; ++ i)
                 handles.get(i).clear();
             success = true;
             for (int i = 0; i < n; ++ i) {
-                System.out.println("Player " + (i + 1) + " attempts to hold handle " + (move[i] + 1));
+                if (humanVerbose) System.out.println("Player " + (i + 1) + " attempts to hold handle " + (move[i] + 1));
                 handles.get(move[i]).add(i);
                 if (handles.get(move[i]).size() > 1)
                     success = false;
@@ -99,11 +100,13 @@ public class Simulator {
                 if (handles.get(i).size() == 1) {
                   players[handles.get(i).get(0)].release();
                 }
-                System.out.print("Attempting handle " + (i + 1) + ":");
-                for (int k : handles.get(i))
-                    System.out.print(" " + (k + 1));
-                System.out.println("");
-                //System.out.println(" grabbed handle " + i);
+                if (humanVerbose) {
+                    System.out.print("Attempting handle " + (i + 1) + ":");
+                    for (int k : handles.get(i))
+                        System.out.print(" " + (k + 1));
+                    System.out.println();
+                    // System.out.println("\n grabbed handle " + i);
+                }
             }
 
             if (gui) gui(server, state(n, playerNames, handles, success ? -1 : fps, turn));
@@ -222,6 +225,8 @@ public class Simulator {
                         fps = Double.parseDouble(args[i]);
                     } else if (args[i].equals("-v") || args[i].equals("--verbose")) {
                         Log.activate();
+                    } else if (args[i].equals("-h") || args[i].equals("--human-verbose")) {
+                        humanVerbose = true;
                     } else {
                         throw new IllegalArgumentException("Unknown argument \"" + args[i] + "\"");
                     }
