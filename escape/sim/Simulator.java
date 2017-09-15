@@ -91,7 +91,7 @@ public class Simulator {
                     handles.get(i).clear();
                 success = true;
                 for (int i = 0; i < n; ++ i) {
-                    System.out.println("Player " + (i + 1) + " attempts to hold handle " + (move[i] + 1));
+                    //System.out.println("Player " + (i + 1) + " attempts to hold handle " + (move[i] + 1));
                     handles.get(move[i]).add(i);
                     if (handles.get(move[i]).size() > 1)
                         success = false;
@@ -102,7 +102,7 @@ public class Simulator {
                     if (handles.get(i).size() == 1) {
                         players[handles.get(i).get(0)].release();
                     }
-                    System.out.print("Attempting handle " + (i + 1) + ":");
+                    //System.out.print("Attempting handle " + (i + 1) + ":");
                     for (int k : handles.get(i))
                         System.out.print(" " + (k + 1));
                     System.out.println("");
@@ -142,7 +142,7 @@ public class Simulator {
             System.out.println(scores.get(i));
             sum += scores.get(i);
         }
-        System.out.println(((float)sum) / scores.size());
+        //System.out.println(((float)sum) / scores.size());
         System.exit(0);
     }
 

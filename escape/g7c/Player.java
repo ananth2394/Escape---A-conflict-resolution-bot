@@ -30,7 +30,7 @@ public class Player implements escape.sim.Player {
 
     public int attempt(List<Integer> conflicts) {
         int move = this.getMove(conflicts);
-        System.out.println(conflicts);
+        //System.out.println(conflicts);
         //System.out.println("hihihi");
         this.nextLastMove = this.lastMove;
         this.lastMove = move;
@@ -77,10 +77,10 @@ public class Player implements escape.sim.Player {
         }
         if (enableProb){
             int temp = this.rand.nextInt(this.n);
-            System.out.println("temp" + temp);
+            //System.out.println("temp" + temp);
             if (temp!=0){
                 choices.remove(new Integer(excluding));
-                System.out.println(choices);
+                //System.out.println(choices);
             }
         }
         else

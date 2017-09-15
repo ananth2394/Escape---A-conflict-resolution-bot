@@ -1,12 +1,14 @@
+#!/usr/bin/python
 import subprocess, os
 
 FNULL = open(os.devnull, "w")
-player = "g6c"
+player = "g7c"
 num_handles = 100
-repetition = 11
+repetition = 100
 results = []
 
 for i in range(repetition):
+    print(i)
     p = open("tmp.log", "w")
     subprocess.run(["java", "escape.sim.Simulator", "-p", player, "-d", str(num_handles)], stdout = p, stderr = FNULL)
     p.close
