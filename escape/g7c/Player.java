@@ -11,7 +11,8 @@ public class Player implements escape.sim.Player {
     private int n;
     private int lastMove;
     private int nextLastMove;
-    private int ownedHandle = -1;
+    private int oddOwnedHandle = -1;
+    private int evenOwnedHandle = -1;
     private ArrayList<Integer> moves;  // Represents the handles held in the previous turns. Zero-based.
     private ArrayList<List<Integer>> conflictsPerRound;
 
@@ -38,22 +39,38 @@ public class Player implements escape.sim.Player {
     }
 
     public int getMove(List<Integer> conflicts) {
-        if (this.turn == 0) {
-            return 0;
-        } else if ((this.turn % 2) != 0) {
-            if (conflicts.size() == 0) {
-                this.ownedHandle = this.lastMove;
-            }
-            if (this.ownedHandle != -1) {
-                return this.chooseRandomExcluding(this.ownedHandle, conflicts);
+        boolean isFirstTurn = this.turn == 0;
+        if (isFirstTurn) return 0;
+
+        /*
+         * If there are not conflicts, and the previous handle is not already
+         * owned in the next turn, own it in this kind (even or odd) of turns.
+         */
+        boolean isOddTurn = (this.turn % 2) != 0;
+        boolean hasConflicted = conflicts.size() != 0;
+        if (!hasConflicted) {
+            if (isOddTurn) {
+                if (oddOwnedHandle != this.lastMove)
+                    this.evenOwnedHandle = this.lastMove;
             } else {
-                return this.chooseRandom(conflicts);
+                if (evenOwnedHandle != this.lastMove)
+                    this.oddOwnedHandle = this.lastMove;
+            }
+        }
+
+        boolean hasOddOwnedHandle = this.oddOwnedHandle != -1;
+        boolean hasEvenOwnedHandle = this.evenOwnedHandle != -1;
+        if (isOddTurn) {
+            if (hasEvenOwnedHandle) {
+                return this.evenOwnedHandle;
+            } else {
+                return this.chooseRandomExcluding(this.oddOwnedHandle, conflicts);
             }
         } else {
-            if (this.ownedHandle != -1) {
-                return this.ownedHandle;
+            if (hasOddOwnedHandle) {
+                return this.oddOwnedHandle;
             } else {
-                return this.chooseRandomExcluding(this.nextLastMove, conflicts);
+                return this.chooseRandomExcluding(this.evenOwnedHandle, conflicts);
             }
         }
     }
