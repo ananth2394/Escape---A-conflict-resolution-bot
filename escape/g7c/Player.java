@@ -90,8 +90,10 @@ public class Player implements escape.sim.Player {
                 int resolutionHandle = conflictResolutionHandle(resolvingWith);
                 if (resolutionHandle != -1) {
                     if (willStay == false) {
+                        System.out.println("Resolving conflict with " + resolvingWith + "  (leaving) " + resolutionHandle);
                         return resolutionHandle;
                     } else {
+                        System.out.println("Resolving conflict with " + resolvingWith + "  (staying) " + resolutionHandle);
                         return this.chooseRandomExcluding(resolutionHandle, conflicts);
                     }
                 }
@@ -104,7 +106,10 @@ public class Player implements escape.sim.Player {
         } else {
             if (this.ownedHandle != -1) {
                 return this.ownedHandle;
-            } else {
+            } else if (this.resolvingOn != -1) {
+                return this.resolvingOn;
+            }
+            else {
                 return this.chooseRandomExcluding(this.nextLastMove, conflicts);
             }
         }
