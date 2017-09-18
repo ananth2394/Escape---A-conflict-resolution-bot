@@ -1,20 +1,14 @@
-import subprocess
-import statistics
-import os
-import sys
-from tqdm import tqdm
-
-if len(sys.argv) is not 4:
-    print("Usage: python3 %s player num_handles num_repetition" % sys.argv[0])
-    sys.exit(0)
+#!/usr/bin/python
+import subprocess, os
 
 FNULL = open(os.devnull, "w")
-player = sys.argv[1]
-num_handles = int(sys.argv[2])
-repetition = int(sys.argv[3])
+player = "g7c"
+num_handles = 5
+repetition = 100
 results = []
 
-for i in tqdm(range(repetition)):
+for i in range(repetition):
+    print(i)
     p = open("tmp.log", "w")
     subprocess.run(["java", "escape.sim.Simulator", "-p", player, "-d", str(num_handles)], stdout = p, stderr = FNULL)
     p.close
@@ -28,9 +22,9 @@ for i in tqdm(range(repetition)):
             results.append(-1)
         results.extend(parsed)
         log.close()
-
-print("\n\n%d players (%s) for %d iterations" % (num_handles, player, repetition))
-print("- Min, max: %d, %d" % (min(results), max(results)))
-print("- Median: %.2f" % statistics.median(results))
-print("- Average: %.2f" % statistics.mean(results))
-print("- Standard deviation: %.2f" % statistics.pstdev(results))
+    #exec cmd
+print("Results: " + str(results))
+import statistics
+print("Median: " + str(statistics.median(results)))
+print("Average: " + str(statistics.mean(results)))
+print("Standard deviation: " + str(statistics.pstdev(results)))

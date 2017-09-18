@@ -94,7 +94,13 @@ public class Player implements escape.sim.Player {
                         return resolutionHandle;
                     } else {
                         System.out.println("Resolving conflict with " + resolvingWith + "  (staying) " + resolutionHandle);
-                        return this.chooseRandomExcluding(resolutionHandle, conflicts);
+                        if (this.ownedHandle != -1) {
+                            return this.chooseRandomExcluding2(resolutionHandle, this.ownedHandle, conflicts);
+                        } else {
+                            if (this.ownedHandle != -1) {
+                                return this.chooseRandomExcluding(resolutionHandle, conflicts);
+                            }
+                        }
                     }
                 }
             }
@@ -140,7 +146,9 @@ public class Player implements escape.sim.Player {
         boolean avoidLast = conflicts.size() == 0;
         List<Integer> choices = new ArrayList<Integer>();
         for (int i = 0; i < this.n; i++) {
-            choices.add(i);
+            if (!this.avoid.contains(i)) {
+                choices.add(i);
+            }
         }
         if (conflicts.size() != 0) {
             choices.remove(new Integer(this.lastMove));
@@ -149,4 +157,22 @@ public class Player implements escape.sim.Player {
         int index = this.rand.nextInt(choices.size());
         return choices.get(index);
     }
+    
+    public int chooseRandomExcluding2(int excluding1, int excluding2, List<Integer> conflicts) {
+        boolean avoidLast = conflicts.size() == 0;
+        List<Integer> choices = new ArrayList<Integer>();
+        for (int i = 0; i < this.n; i++) {
+            if (!this.avoid.contains(i)) {
+                choices.add(i);
+            }
+        }
+        if (conflicts.size() != 0) {
+            choices.remove(new Integer(this.lastMove));
+        }
+        choices.remove(new Integer(excluding1));
+        choices.remove(new Integer(excluding2));
+        int index = this.rand.nextInt(choices.size());
+        return choices.get(index);
+    }
+    
 }
