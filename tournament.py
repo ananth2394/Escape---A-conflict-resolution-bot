@@ -3,8 +3,8 @@ import subprocess, os
 
 FNULL = open(os.devnull, "w")
 player = "g7c"
-num_handles = 5
-repetition = 100
+num_handles = 100
+repetition = 10
 results = []
 
 for i in range(repetition):
