@@ -35,6 +35,7 @@ public class Player implements escape.sim.Player {
         this.lastMove = move;
         this.moves.add(move);
         this.turn++;
+        System.out.printf("oddOwnedHandle: %d, evenOwnedHandle: %d, moves: %s\n", oddOwnedHandle, evenOwnedHandle, moves);
         return move + 1;
     }
 
