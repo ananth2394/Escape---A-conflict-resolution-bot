@@ -15,8 +15,11 @@ public class Player implements escape.sim.Player {
     private int ownedHandle = -1;
     private ArrayList<Integer> moves;  // Represents the handles held in the previous turns. Zero-based.
     private ArrayList<List<Integer>> conflictsPerRound;
-    private double[] weights;
+    private double[] weightsEven;
+    private double[] weightsOdd;
     private double totalWeight = 0.0;
+    private int ownedEven = -1;
+    private int ownedOdd = -1;
 	
     public Player() {
         this.rand = new Random();
@@ -27,10 +30,12 @@ public class Player implements escape.sim.Player {
         this.n = n;
         this.conflictsPerRound = new ArrayList<List<Integer>>();
         this.moves = new ArrayList<Integer>();
-        weights = new double[n];
+        weightsEven = new double[n];
+        weightsOdd = new double[n];
         for (int i=0; i<n; ++i){
             totalWeight += 100;
-            weights[i] = 100;
+            weightsEven[i] = 100;
+            weightsOdd[i] = 100;
         }
         return attempt(null);
     }
@@ -50,50 +55,78 @@ public class Player implements escape.sim.Player {
         if (this.turn == 0) {
             return 0;
         } 
-        else if ((this.turn % 2) != 0) {
-            if (conflicts.size() == 0) {
-                this.ownedHandle = this.lastMove;
+        else if (this.turn == 1){
+            if (conflicts.size() == 0){
+                this.ownedEven = this.lastMove;
+                return 1;
             }
-            if (this.ownedHandle != -1) {
-                return this.chooseRandomExcluding(this.ownedHandle, conflicts, false);
-            } else {
-                return this.chooseRandom(conflicts);
+            else {
+                return 1;
             }
-        } 
-        else {
-            if (this.ownedHandle != -1) {
-                return this.ownedHandle;
-            } else {
-                //double percentage = 0.5;
-                double percentage = (weights[this.nextLastMove]/totalWeight);
-                //System.out.println("percentage: " + percentage);
+        }
+        else if (this.turn == 2){
+            if (conflicts.size() == 0){
+                this.ownedOdd = this.lastMove;
+            }
+            if (this.ownedEven != -1){
+                return this.ownedEven;
+            }
+            else{
+                return this.chooseRandomExcluding(this.ownedOdd, conflicts, true);
+            }
+        }
 
-                //double lowerWeight = weights[this.nextLastMove] - (percentage*weights[this.nextLastMove]);
-                //double lowerWeight = weights[this.nextLastMove] - Math.exp(-percentage*(Math.log(this.n)*Math.log(this.n)/1.1)) * weights[this.nextLastMove];
-                double lowerWeight = weights[this.nextLastMove] - Math.exp(-percentage*4*(this.n/5)) * weights[this.nextLastMove];
+        else if ((this.turn % 2) != 0) { //odd turns
+            if (conflicts.size() == 0 && this.ownedEven == -1) {
+                this.ownedHandle = this.lastMove;
+                this.ownedEven = this.lastMove;
+            }
+            if (this.ownedOdd != -1) {
+                //return this.chooseRandomExcluding(this.ownedEven, conflicts, false);
+                return this.ownedOdd;
+            } else {
+                double percentage = (weightsOdd[this.nextLastMove]/totalWeight);
+                double lowerWeight = weightsOdd[this.nextLastMove] - Math.exp(-percentage*4*(this.n/5)*Math.pow(1.1,this.turn/Math.sqrt(this.n))) * weightsOdd[this.nextLastMove];
+                double tempTotalWeight = totalWeight - weightsOdd[this.nextLastMove];
                                                                                 //Math.exp(-percentage/100); //* weights[this.nextLastMove]/totalWeight;
-                //System.out.println("lower weight: " + lowerWeight);
-                for (int i=0; i<weights.length; ++i){
+                for (int i=0; i<weightsOdd.length; ++i){
                     if (i!=this.nextLastMove){
-                        weights[i] += lowerWeight/(this.n-1);
-                        //System.out.println("A");
+                        //weightsOdd[i] += lowerWeight/(this.n-1);
+                        weightsOdd[i] += lowerWeight * (weightsOdd[i]/tempTotalWeight);
                     }
                     else{
-                        weights[i] -= lowerWeight;
-                        //System.out.println("B");
+                        weightsOdd[i] -= lowerWeight;
+                    }
+                }
+                System.out.println("weights: " + Arrays.toString(weightsOdd));
+                return this.chooseRandomExcluding(this.ownedEven, conflicts, true);
+            }
+        } 
+        else { //even turns
+            if (conflicts.size() == 0 && this.ownedOdd == -1){
+                this.ownedOdd = this.lastMove;
+            }
+            if (this.ownedEven != -1) {
+                return this.ownedEven;
+            } else {
+                double percentage = (weightsEven[this.nextLastMove]/totalWeight);
+                double lowerWeight = weightsEven[this.nextLastMove] - Math.exp(-percentage*4*(this.n/5)) * weightsEven[this.nextLastMove];
+                                                                                //Math.exp(-percentage/100); //* weights[this.nextLastMove]/totalWeight;
+                double tempTotalWeight = totalWeight - weightsEven[this.nextLastMove];
+                for (int i=0; i<weightsEven.length; ++i){
+                    if (i!=this.nextLastMove){
+                        //weightsEven[i] += lowerWeight/(this.n-1);
+                        weightsEven[i] += lowerWeight * (weightsEven[i]/tempTotalWeight);
+                    }
+                    else{
+                        weightsEven[i] -= lowerWeight;
                     }
                 }
 
-                System.out.println("weights: " + Arrays.toString(weights));
+                System.out.println("weights: " + Arrays.toString(weightsEven));
                 int randomHandle;
-                if (this.rand.nextInt(this.n)!=0){
-                    randomHandle = this.chooseRandomExcluding(this.nextLastMove, conflicts, true);
-                }
-                else{
-                    randomHandle = this.chooseRandomExcluding(-1, conflicts, true);
-                }
+                randomHandle = this.chooseRandomExcluding(this.ownedOdd,conflicts,true);
 
-                //return this.chooseRandomExcluding(this.nextLastMove, conflicts, true);
                 return randomHandle;
             }
         }
@@ -105,88 +138,79 @@ public class Player implements escape.sim.Player {
     
     public int chooseRandomExcluding(int excluding, List<Integer> conflicts, boolean enableProb) {
         boolean avoidLast = conflicts.size() == 0;
-        /*
-        List<Integer> choices = new ArrayList<Integer>();
-        for (int i = 0; i < this.n; i++) {
-            choices.add(i);
-        }
-        if (conflicts.size() != 0) {
-            choices.remove(new Integer(this.lastMove));
-        }
-        if (enableProb){
-            int temp = this.rand.nextInt(this.n);
-            //System.out.println("temp" + temp);
-            if (temp!=0){
-                choices.remove(new Integer(excluding));
-                //System.out.println(choices);
-            }
-        }
-        else
-            choices.remove(new Integer(excluding));
-        int index = this.rand.nextInt(choices.size());
-        return choices.get(index);
-        */
 
         int randomNum = this.weightedRandom(excluding, conflicts);
-        /*if (this.rand.nextInt(2)!=0){
-            randomNum = this.weightedRandom(excluding, conflicts);
-        }
-        else{
-            randomNum = this.weightedRandom(-1, conflicts);
-        }*/
-
-        /*if (conflicts.size() != 0){
-            while (randomNum==this.lastMove || randomNum==excluding){
-                randomNum = this.weightedRandom(0);
-            }
-        }*/
         return randomNum;
     }
 
     public int weightedRandom(int excluding, List<Integer> conflicts){
         int randomIndex = -1;
-        //System.out.println("weights original: " + Arrays.toString(weights));
         double tempTotalWeight = totalWeight;
-        //System.out.println("tempTotalWeight original: " + tempTotalWeight);
         double tempExcluding = 0;
         double tempConflict = 0;
         if (excluding>-1){
-            tempExcluding = weights[excluding];
-            weights[excluding] = 0;
+            if ((this.turn % 2) != 0){
+                tempExcluding = weightsOdd[excluding];
+                weightsOdd[excluding] = 0;
+                //tempTotalWeight -= tempExcluding;
+            }
+            else{
+                tempExcluding = weightsEven[excluding];
+                weightsEven[excluding] = 0;
+                //tempTotalWeight -= tempExcluding;
+            }
             tempTotalWeight -= tempExcluding;
         }
 
         if (conflicts.size() != 0){
-            tempConflict = weights[this.lastMove];
-            weights[this.lastMove] = 0;
+            if ((this.turn % 2) != 0){
+                tempConflict = weightsOdd[this.lastMove];
+                weightsOdd[this.lastMove] = 0;
+                //tempTotalWeight -= tempConflict;
+            }
+            else{
+                tempConflict = weightsEven[this.lastMove];
+                weightsEven[this.lastMove] = 0;
+                //tempTotalWeight -= tempConflict;
+            }
             tempTotalWeight -= tempConflict;
         }
 
         double random = Math.random() * tempTotalWeight;
-        //System.out.println("random: " + random);
-        //System.out.println("tempTotalWeight: " + tempTotalWeight);
-        //System.out.println("weights: " + Arrays.toString(weights));
         
-        for (int i=0; i<weights.length; ++i){
-            random -= weights[i];
-            //System.out.println("[" + i + "]: " + random);
-            if (random <= 0.0d){
-                randomIndex = i;
-                break;
+        for (int i=0; i<this.n; ++i){
+            if ((this.turn % 2) != 0){
+                random -= weightsOdd[i];
+                if (random <= 0.0d){
+                    randomIndex = i;
+                    break;
+                }
             }
-            else if (i==weights.length-1){
-                randomIndex = i;
+            else{
+                random -= weightsEven[i];
+                if (random <= 0.0d){
+                    randomIndex = i;
+                    break;
+                }
             }
         }
-        //System.out.println("hihihi" + randomIndex);
         if (tempExcluding!=0){
-            weights[excluding] = tempExcluding;
+            if ((this.turn % 2) != 0){
+                weightsOdd[excluding] = tempExcluding;
+            }
+            else{
+                weightsEven[excluding] = tempExcluding;
+            }
         }
         if (tempConflict!=0){
-            weights[this.lastMove] = tempConflict;
+            if ((this.turn % 2) != 0){
+                weightsOdd[this.lastMove] = tempConflict;
+            }
+            else{
+                weightsEven[this.lastMove] = tempConflict;
+            }
         }
 
-        //System.out.println("randomIndex: " + randomIndex);
         return randomIndex;
     }
         
