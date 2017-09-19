@@ -110,7 +110,7 @@ public class Player implements escape.sim.Player {
                 return this.ownedEven;
             } else {
                 double percentage = (weightsEven[this.nextLastMove]/totalWeight);
-                double lowerWeight = weightsEven[this.nextLastMove] - Math.exp(-percentage*4*(this.n/5)) * weightsEven[this.nextLastMove];
+                double lowerWeight = weightsEven[this.nextLastMove] - Math.exp(-percentage*4*(this.n/5)*Math.pow(1.1,this.turn/Math.sqrt(this.n))) * weightsEven[this.nextLastMove];
                                                                                 //Math.exp(-percentage/100); //* weights[this.nextLastMove]/totalWeight;
                 double tempTotalWeight = totalWeight - weightsEven[this.nextLastMove];
                 for (int i=0; i<weightsEven.length; ++i){
