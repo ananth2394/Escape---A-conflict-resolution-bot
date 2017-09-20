@@ -10,12 +10,14 @@ public class Player implements escape.sim.Player {
     private Random rand;
     private int turn;
     private int n;
-    private int lastMove;
-    private int nextLastMove;
+
+    private int lastMove = -1;
+    private int nextLastMove = -1;
+    private ArrayList<Integer> moves;  // Represents the handles held in the previous turns. Zero-based.
+
     private int oddOwnedHandle = -1;
     private int evenOwnedHandle = -1;
-    private ArrayList<Integer> moves;  // Represents the handles held in the previous turns. Zero-based.
-    private ArrayList<List<Integer>> conflictsPerRound;
+
 
     public Player() {
         this.rand = new Random();
@@ -24,7 +26,6 @@ public class Player implements escape.sim.Player {
     public int init(int n) {
         this.turn = 0;
         this.n = n;
-        this.conflictsPerRound = new ArrayList<List<Integer>>();
         this.moves = new ArrayList<Integer>();
 
         return attempt(null);
@@ -47,11 +48,22 @@ public class Player implements escape.sim.Player {
         boolean isFirstTurn = this.turn == 0;
         if (isFirstTurn) return 0;
 
+        boolean isOddTurn = (this.turn % 2) != 0;
+
+        /* Security mechanism to avoid the deadlock that happens when the only
+         * handle left in one round is the one the user owns in the other, which
+         * is the one he is not allowed to come back to.
+         * Reset this round ownership.
+         */
+        if (this.turn % n == 0) {
+            if (isOddTurn) this.oddOwnedHandle = -1;
+            else this.evenOwnedHandle = -1;
+        }
+
         /*
          * If there are not conflicts, and the previous handle is not already
          * owned in the next turn, own it in this kind (even or odd) of turns.
          */
-        boolean isOddTurn = (this.turn % 2) != 0;
         boolean hasConflicted = conflicts.size() != 0;
         if (!hasConflicted) {
             if (isOddTurn) {
@@ -69,16 +81,16 @@ public class Player implements escape.sim.Player {
             if (hasOddOwnedHandle) {
                 return this.oddOwnedHandle;
             } else if (hasEvenOwnedHandle) {
-                return this.chooseRandomExcluding(this.evenOwnedHandle, conflicts);
+                return this.chooseNextExcluding(this.evenOwnedHandle, conflicts);
             }
         } else {
             if (hasEvenOwnedHandle) {
                 return this.evenOwnedHandle;
             } else if (hasOddOwnedHandle) {
-                return this.chooseRandomExcluding(this.oddOwnedHandle, conflicts);
+                return this.chooseNextExcluding(this.oddOwnedHandle, conflicts);
             }
         }
-        return this.chooseRandom(conflicts);
+        return this.chooseNext(conflicts);
     }
 
     public int chooseRandom(List<Integer> conflicts) {
@@ -86,7 +98,6 @@ public class Player implements escape.sim.Player {
     }
 
     public int chooseRandomExcluding(int excluding, List<Integer> conflicts) {
-        boolean avoidLast = conflicts.size() == 0;
         List<Integer> choices = new ArrayList<Integer>();
         for (int i = 0; i < this.n; i++) {
             choices.add(i);
@@ -97,5 +108,24 @@ public class Player implements escape.sim.Player {
         choices.remove(new Integer(excluding));
         int index = this.rand.nextInt(choices.size());
         return choices.get(index);
+    }
+
+    public int chooseNext(List<Integer> conflicts) {
+        return this.chooseNextExcluding(-1, conflicts);
+    }
+
+    public int chooseNextExcluding(int excluding, List<Integer> conflicts) {
+        boolean validMove;
+        int nextMove = this.nextLastMove;
+        boolean hasConflicted = conflicts.size() != 0;
+
+        List<Integer> invalidMoves = new ArrayList<Integer>();
+        invalidMoves.add(excluding);
+        invalidMoves.add(this.lastMove);
+
+        do {
+            nextMove = (nextMove+1) % this.n;
+        } while (invalidMoves.contains(nextMove));
+        return nextMove;
     }
 }
