@@ -58,6 +58,17 @@ public class Player implements escape.sim.Player {
     }
     
     public int getMove(List<Integer> conflicts) {
+        //if (this.turn % (this.n*2+2) == 0){
+        //if (this.turn >= (this.n*2)){
+        if (this.turn % (this.n*2+2) == 0){
+            /*if (this.turn%3 == 0){
+                if (this.turn %2 != 0) this.ownedEven = -1;
+                else this.ownedOdd = -1;
+            }*/
+            //this.ownedEven = this.ownedOdd = -1;
+            if (this.turn%2 != 0) this.ownedEven = -1;
+            else this.ownedOdd = -1;
+        }
         if (this.turn == 0) {
             return 0;
         } 
