@@ -5,8 +5,9 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class Player implements escape.sim.Player {
-    private Random rand;
+    private boolean DEBUG = false;
 
+    private Random rand;
     private int turn;
     private int n;
     private int lastMove;
@@ -35,7 +36,10 @@ public class Player implements escape.sim.Player {
         this.lastMove = move;
         this.moves.add(move);
         this.turn++;
-        System.out.printf("oddOwnedHandle: %d, evenOwnedHandle: %d, moves: %s\n", oddOwnedHandle, evenOwnedHandle, moves);
+        if (DEBUG) {
+            System.out.printf("oddOwnedHandle: %d, evenOwnedHandle: %d, moves: %s\n",
+                oddOwnedHandle, evenOwnedHandle, moves);
+        }
         return move + 1;
     }
 
@@ -51,10 +55,10 @@ public class Player implements escape.sim.Player {
         boolean hasConflicted = conflicts.size() != 0;
         if (!hasConflicted) {
             if (isOddTurn) {
-                if (oddOwnedHandle != this.lastMove)
+                if (this.oddOwnedHandle != this.lastMove)
                     this.evenOwnedHandle = this.lastMove;
             } else {
-                if (evenOwnedHandle != this.lastMove)
+                if (this.evenOwnedHandle != this.lastMove)
                     this.oddOwnedHandle = this.lastMove;
             }
         }
@@ -62,18 +66,19 @@ public class Player implements escape.sim.Player {
         boolean hasOddOwnedHandle = this.oddOwnedHandle != -1;
         boolean hasEvenOwnedHandle = this.evenOwnedHandle != -1;
         if (isOddTurn) {
-            if (hasEvenOwnedHandle) {
-                return this.evenOwnedHandle;
-            } else {
-                return this.chooseRandomExcluding(this.oddOwnedHandle, conflicts);
-            }
-        } else {
             if (hasOddOwnedHandle) {
                 return this.oddOwnedHandle;
-            } else {
+            } else if (hasEvenOwnedHandle) {
                 return this.chooseRandomExcluding(this.evenOwnedHandle, conflicts);
             }
+        } else {
+            if (hasEvenOwnedHandle) {
+                return this.evenOwnedHandle;
+            } else if (hasOddOwnedHandle) {
+                return this.chooseRandomExcluding(this.oddOwnedHandle, conflicts);
+            }
         }
+        return this.chooseRandom(conflicts);
     }
 
     public int chooseRandom(List<Integer> conflicts) {
