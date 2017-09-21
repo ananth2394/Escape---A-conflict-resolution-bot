@@ -48,15 +48,19 @@ function process(data) {
 	}
 	document.getElementById("info").innerHTML = infoContent;
 
+	var emptyBin = 0;
 	var binContent = "";
 	for (i = 0; i < n; ++ i) {
 		binContent += "<p>Handle <span class='rect'>H" + (i + 1) + "</span>:";
 		for (j = 0; j < handles[i].length; ++ j)
-			binContent += " <span class='circled'>p" + (handles[i][j] + 1) + "</span>";
+			// binContent += " <span class='circled'>p" + (handles[i][j] + 1) + "</span>";
+			binContent += " <span class='circled'>" + names[handles[i][j]] + "</span>";
 		binContent += "</p>";
+		if (handles[i].length == 0)
+			++ emptyBin;
 	}
 	document.getElementById("bin").innerHTML = binContent;
-	document.getElementById("turn").innerHTML = "Turn: " + turn;
+	document.getElementById("turn").innerHTML = "Turn: " + turn + "&nbsp;&nbsp;&nbsp;&nbsp;" + "Number of empty handles: " + emptyBin;
 
 	/*
 	var canvas = document.getElementById("canvas");

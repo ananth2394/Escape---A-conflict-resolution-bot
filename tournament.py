@@ -17,7 +17,9 @@ results = []
 
 for i in tqdm(range(repetition)):
     p = open("tmp.log", "w")
-    subprocess.run(["java", "escape.sim.Simulator", "-p", player, "-d", str(num_handles)], stdout = p, stderr = FNULL)
+    #subprocess.run(["java", "escape.sim.Simulator", "-p", player, "-d", str(num_handles)], stdout = p, stderr = FNULL)
+    #subprocess.run(["java", "-Xms8192m", "-Xmx10240m", "escape.sim.Simulator", "-p", player, "-d", str(num_handles)], stdout = p, stderr = FNULL)
+    subprocess.run(["java", "-Xms8192m", "-Xmx10240m", "escape.sim.Simulator", "-p", player, "-d", str(num_handles)], stdout = p, stderr = FNULL)
     p.close
     with open("tmp.log", "rb") as log:
         log.seek(-2, 2)

@@ -38,6 +38,7 @@ public class Player implements escape.sim.Player {
             weightsEven[i] = 100;
             weightsOdd[i] = 100;
         }
+        System.out.println("testing: " + 3*0.9);
         //tieBreakerValue = 0.9 + (0.02-0.9)*(0.33-1.0/this.n)/(0.33-0.005);
         tieBreakerValue = 0.9 + (0.1-0.9)*(Math.log(0.33)-Math.log(1.0/n))/(Math.log(0.33)-Math.log(0.0005));
         System.out.println("tiebreaker:: " + tieBreakerValue);
@@ -68,6 +69,8 @@ public class Player implements escape.sim.Player {
             //this.ownedEven = this.ownedOdd = -1;
             if (this.turn%2 != 0) this.ownedEven = -1;
             else this.ownedOdd = -1;
+            ///if (this.ownedOdd != -1) this.ownedOdd = -1;
+            ///else this.ownedEven = -1;
         }
         if (this.turn == 0) {
             return 0;

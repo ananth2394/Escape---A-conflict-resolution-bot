@@ -18,9 +18,8 @@ import javax.tools.ToolProvider;
 public class Simulator {
     private static final String root = "escape";
     private static final String statics_root = "statics";
-    private static final int turnLimit = 100000;
-    
-    private static int iterations = 1;
+    private static final int turnLimit = 10000;
+
     private static long playerTimeout = 5000;
     private static boolean gui = false;
     private static double fps = 5;
@@ -28,121 +27,111 @@ public class Simulator {
     private static List<String> playerNames = new ArrayList<String>();
     private static PlayerWrapper[] players;
     private static int duplicates = 1;
-    
+
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
-        //        args = new String[] {"-p", "random", "random", "random", "-v", "-g"};
+//		args = new String[] {"-p", "random", "random", "random", "-v", "-g"};
         parseArgs(args);
-        List<Integer> scores = new ArrayList<Integer>();
-        for (int iter = 0; iter < iterations; iter++) {
-            n = playerNames.size() * duplicates;
-            int[] lastMoves = new int[n];
-            players = new PlayerWrapper[n];
-            for (int i = 0; i < n; ++ i) {
-                Log.record("Loading player " + (i + 1) + ": " + playerNames.get(i / duplicates));
-                Player player = loadPlayer(playerNames.get(i / duplicates));
-                if (player == null) {
-                    Log.record("Cannot load player " + (i + 1) + ": " + playerNames.get(i / duplicates));
-                    System.exit(1);
-                }
-                players[i] = new PlayerWrapper(player, i, playerNames.get(i / duplicates), playerTimeout);
-            }
-            
-            System.out.println("Starting game with " + n + " players");
-            
-            boolean success = false;
-            int[] move = new int[n];
-            // List<Integer>[] handles = new List<Integer>[n];
-            List<List<Integer>> handles = new ArrayList<List<Integer>>();
-            HTTPServer server = null;
-            if (gui) {
-                server = new HTTPServer();
-                Log.record("Hosting HTTP Server on " + server.addr());
-                if (!Desktop.isDesktopSupported())
-                    Log.record("Desktop operations not supported");
-                else if (!Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
-                    Log.record("Desktop browse operation not supported");
-                else {
-                    try {
-                        Desktop.getDesktop().browse(new URI("http://localhost:" + server.port()));
-                    } catch (URISyntaxException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            
-            for (int i = 0; i < n; ++ i) {
-                try {
-                    move[i] = players[i].init(n);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    System.exit(1);
-                }
-                if (move[i] < 0 || move[i] >= n) {
-                    System.out.println("Player " + (i + 1) + " makes an illegal move.");
-                    System.exit(1);
-                }
-                // handles.get(i) = new ArrayList<Integer>();
-                handles.add(new ArrayList<Integer>());
-            }
-            
-            for (int turn = 1; turn < turnLimit; ++ turn) {
-                System.out.println("Round " + turn);
-                for (int i = 0; i < n; ++ i)
-                    handles.get(i).clear();
-                success = true;
-                for (int i = 0; i < n; ++ i) {
-                    System.out.println("Player " + (i + 1) + " attempts to hold handle " + (move[i] + 1));
-                    handles.get(move[i]).add(i);
-                    if (handles.get(move[i]).size() > 1)
-                        success = false;
-                }
-                
-                for (int i = 0; i < n; ++ i) {
-                    if (handles.get(i).size() == 0) continue;
-                    if (handles.get(i).size() == 1) {
-                        players[handles.get(i).get(0)].release();
-                    }
-                    System.out.print("Attempting handle " + (i + 1) + ":");
-                    for (int k : handles.get(i))
-                        System.out.print(" " + (k + 1));
-                    System.out.println("");
-                    //System.out.println(" grabbed handle " + i);
-                }
-                
-                if (gui) gui(server, state(n, playerNames, handles, success ? -1 : fps, turn));
-                if (success) {
-                    System.out.println("Every player has a unique handle.");
-                    System.out.println("Scores: " + turn);
-                    scores.add(turn);
-                    break;
-                }
-                for (int i = 0; i < n; ++ i) {
-                    try {
-                        move[i] = players[i].attempt(handles.get(move[i]));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        System.exit(1);
-                    }
-                    if (move[i] < 0 || move[i] >= n) {
-                        System.out.println("Player " + (i + 1) + "(" + players[i].getName() + ") makes an illegal move.");
-                        System.exit(1);
-                    }
-                }
-            }
-            
-            if (!success) {
-                System.out.println("You are doomed!");
-            }
-            for (int i = 0; i < n; ++ i) {
-                Log.record("Total running time for player " + (i + 1) + " is " + players[i].getTotalElapsedTime() + "ms");
-            }
+        n = playerNames.size() * duplicates;
+        int[] lastMoves = new int[n];
+        players = new PlayerWrapper[n];
+        for (int i = 0; i < n; ++ i) {
+        	Log.record("Loading player " + (i + 1) + ": " + playerNames.get(i / duplicates));
+        	Player player = loadPlayer(playerNames.get(i / duplicates));
+        	if (player == null) {
+        		Log.record("Cannot load player " + (i + 1) + ": " + playerNames.get(i / duplicates));
+        		System.exit(1);
+        	}
+        	players[i] = new PlayerWrapper(player, i, playerNames.get(i / duplicates), playerTimeout);
         }
-        int sum = 0;
-        for (int i = 0; i < scores.size(); i++) {
-            System.out.println(scores.get(i));
-            sum += scores.get(i);
+
+        System.out.println("Starting game with " + n + " players");
+
+        boolean success = false;
+        int[] move = new int[n];
+        // List<Integer>[] handles = new List<Integer>[n];
+        List<List<Integer>> handles = new ArrayList<List<Integer>>();
+        HTTPServer server = null;
+        if (gui) {
+        	server = new HTTPServer();
+        	Log.record("Hosting HTTP Server on " + server.addr());
+        	if (!Desktop.isDesktopSupported())
+        		Log.record("Desktop operations not supported");
+        	else if (!Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
+        		Log.record("Desktop browse operation not supported");
+			else {
+				try {
+					Desktop.getDesktop().browse(new URI("http://localhost:" + server.port()));
+				} catch (URISyntaxException e) {
+					e.printStackTrace();
+				}
+			}
         }
-        //System.out.println(((float)sum) / scores.size());
+
+        for (int i = 0; i < n; ++ i) {
+        	try {
+        		move[i] = players[i].init(n);
+        	} catch (Exception e) {
+        		e.printStackTrace();
+        		System.exit(1);
+        	}
+        	if (move[i] < 0 || move[i] >= n) {
+        		System.out.println("Player " + (i + 1) + " makes an illegal move.");
+        		System.exit(1);
+        	}
+        	// handles.get(i) = new ArrayList<Integer>();
+          handles.add(new ArrayList<Integer>());
+        }
+
+        for (int turn = 1; turn < turnLimit; ++ turn) {
+        	System.out.println("Round " + turn);
+        	for (int i = 0; i < n; ++ i)
+        		handles.get(i).clear();
+        	success = true;
+        	for (int i = 0; i < n; ++ i) {
+        		System.out.println("Player " + (i + 1) + " attempts to hold handle " + (move[i] + 1));
+        		handles.get(move[i]).add(i);
+        		if (handles.get(move[i]).size() > 1)
+        			success = false;
+        	}
+
+			for (int i = 0; i < n; ++ i) {
+				if (handles.get(i).size() == 0) continue;
+                if (handles.get(i).size() == 1) {
+                  players[handles.get(i).get(0)].release();
+                }
+				System.out.print("Attempting handle " + (i + 1) + ":");
+				for (int k : handles.get(i))
+					System.out.print(" " + (k + 1));
+				System.out.println("");
+				//System.out.println(" grabbed handle " + i);
+			}
+
+        	if (gui) gui(server, state(n, playerNames, handles, success ? -1 : fps, turn));
+        	if (success) {
+        		System.out.println("Every player has a unique handle.");
+        		System.out.println("Scores: " + turn);
+        		break;
+        	}
+        	for (int i = 0; i < n; ++ i) {
+        		try {
+					move[i] = players[i].attempt(handles.get(move[i]));
+				} catch (Exception e) {
+					e.printStackTrace();
+					System.exit(1);
+				}
+              	if (move[i] < 0 || move[i] >= n) {
+              		System.out.println("Player " + (i + 1) + "(" + players[i].getName() + ") makes an illegal move.");
+              		System.exit(1);
+              	}
+        	}
+        }
+
+        if (!success) {
+        	System.out.println("You are doomed!");
+        }
+        for (int i = 0; i < n; ++ i) {
+        	Log.record("Total running time for player " + (i + 1) + " is " + players[i].getTotalElapsedTime() + "ms");
+        }
         System.exit(0);
     }
 
@@ -204,10 +193,17 @@ public class Simulator {
         for (; i < args.length; ++i) {
             switch (args[i].charAt(0)) {
                 case '-':
-                    if (args[i].equals("-p") || args[i].equals("--players")) {
+                    if (args[i].startsWith("-p") || args[i].equals("--players")) {
+                        int rep = 1;
+                        try {
+                            rep = Integer.parseInt(args[i].substring(2));
+                        } catch (Exception e) {
+                            rep = 1;
+                        }
                         while (i + 1 < args.length && args[i + 1].charAt(0) != '-') {
                             ++i;
-                            playerNames.add(args[i]);
+                            for (int k = 0; k < rep; ++ k)
+                                playerNames.add(args[i]);
                         }
                     } else if (args[i].equals("-g") || args[i].equals("--gui")) {
                         gui = true;
@@ -233,11 +229,6 @@ public class Simulator {
                         fps = Double.parseDouble(args[i]);
                     } else if (args[i].equals("-v") || args[i].equals("--verbose")) {
                     	Log.activate();
-                    } else if (args[i].equals("-i") || args[i].equals("--iterations")) {
-                        if (++i == args.length) {
-                            throw new IllegalArgumentException("Missing number of iterations");
-                        }
-                        iterations = Integer.parseInt(args[i]);
                     } else {
                         throw new IllegalArgumentException("Unknown argument \"" + args[i] + "\"");
                     }
