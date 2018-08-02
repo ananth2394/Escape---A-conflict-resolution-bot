@@ -1,4 +1,4 @@
-#Escape
+# Escape
 
 This is a bot that resolves conflicts between other bots of the same kind in a limited communication setting.
 
