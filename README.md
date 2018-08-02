@@ -1,11 +1,8 @@
-Escape
+#Escape
 
 This is a bot that resolves conflicts between other bots of the same kind in a limited communication setting.
 
-
-=== PPS 2017 - Escape ===
-
- * Usage
+# Usage
   You need a java environment installed.
   First compile the simulator:
       javac escape/sim/*.java
